@@ -47,6 +47,11 @@
  * \param centerButtonImageName Name for center button image
  * \param centerButtonBackgroundImageName Name for center button background image
  *
+ * \param startAngle The start angle
+ * \param endAngle The end angle 
+ * \param buttonsOnEndpoints Whether the division includes the endpoints as button placements
+ * If a full circle is desired, startAngle and endAngle should have at least 2 values after the decimal point for precision
+ *
  * \returns An KYCircleMenu instance
  */
 - (instancetype)initWithButtonCount:(NSInteger)buttonCount
@@ -57,7 +62,8 @@
               centerButtonImageName:(NSString *)centerButtonImageName
     centerButtonBackgroundImageName:(NSString *)centerButtonBackgroundImageName
                          startAngleInRadians:(CGFloat)startAngle
-                           endAngleInRadians:(CGFloat)endAngle;
+                           endAngleInRadians:(CGFloat)endAngle
+                 buttonsOnEndpoints:(BOOL)buttonsOnEndpoints;
 
 /*! Run action for buttons around.
  *  Override this message to do custom jobs,

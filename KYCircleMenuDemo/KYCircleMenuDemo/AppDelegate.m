@@ -32,7 +32,11 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
                                      centerButtonSize:kKYCircleMenuCenterButtonSize
                                 centerButtonImageName:kKYICircleMenuCenterButton
                       centerButtonBackgroundImageName:kKYICircleMenuCenterButtonBackground
-         startAngleInRadians:0 endAngleInRadians:M_PI];
+                                  startAngleInRadians:0
+                                    endAngleInRadians:M_PI
+                                   buttonsOnEndpoints:NO];
+  
+
   
   // Set the cricle menu vc as the root vc
   (void)[navigationController initWithRootViewController:circleMenuViewController];
