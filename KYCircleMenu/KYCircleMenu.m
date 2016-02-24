@@ -17,6 +17,7 @@
   NSString * centerButtonImageName_;
   NSString * centerButtonBackgroundImageName_;
   
+  
   BOOL shouldRecoverToNormalStatusWhenViewWillAppear_;
 }
 
@@ -47,6 +48,7 @@ static CGFloat defaultTriangleHypotenuse_,
                maxBounceOfTriangleHypotenuse_,
                maxTriangleHypotenuse_;
 
+static CGFloat startAngle_, endAngle_;  // SZD
 
 @implementation KYCircleMenu
 
@@ -73,6 +75,9 @@ static CGFloat defaultTriangleHypotenuse_,
                    centerButtonSize:(CGFloat)centerButtonSize
               centerButtonImageName:(NSString *)centerButtonImageName
     centerButtonBackgroundImageName:(NSString *)centerButtonBackgroundImageName
+                startAngleInRadians:(CGFloat)startAngle
+                  endAngleInRadians:(CGFloat)endAngle
+
 {
   if (self = [self init]) {
     buttonCount_                     = buttonCount;
@@ -82,6 +87,9 @@ static CGFloat defaultTriangleHypotenuse_,
     centerButtonSize_                = centerButtonSize;
     centerButtonImageName_           = centerButtonImageName;
     centerButtonBackgroundImageName_ = centerButtonBackgroundImageName;
+    
+    startAngle_ = startAngle; // SZD 
+    endAngle_ = endAngle;
     
     // Defualt value for triangle hypotenuse
     defaultTriangleHypotenuse_     = (menuSize - buttonSize) * .5f;
@@ -335,9 +343,89 @@ static CGFloat defaultTriangleHypotenuse_,
                    }];
 }
 
+- (CGFloat)r2d:(CGFloat)radian
+{
+  return (radian * 180.0) / M_PI;
+}
+
 // Update buttons' layout with the value of triangle hypotenuse that given
 - (void)_updateButtonsLayoutWithTriangleHypotenuse:(CGFloat)triangleHypotenuse
 {
+  NSLog(@"startAngle: %f | endAngle: %f | hypotenuse: %f\n", [self r2d:startAngle_], [self r2d:endAngle_], triangleHypotenuse);
+  
+  // Check if both angles are less than 2PI
+  // Calculate menuAngle
+  CGFloat menuAngle;
+  if(startAngle_ > endAngle_) {
+    menuAngle = (2 * M_PI) - (startAngle_ - endAngle_);
+  } else {
+    menuAngle = endAngle_ - startAngle_;
+  }
+  
+  NSInteger numberOfDivisions = buttonCount_ + 1;
+  CGFloat divisionAngle = menuAngle / numberOfDivisions;
+  
+  CGFloat center = menuSize_ *.5f;
+  CGFloat buttonRadius = centerButtonSize_ *.5f;
+  
+  NSLog(@"menuAngle: %f | divisionAngle: %f | numberOfDivisions: %lu", [self r2d:menuAngle],
+        [self r2d: divisionAngle], numberOfDivisions);
+  
+  CGFloat prevAngle = startAngle_;
+  
+  for(int i = 1; i < buttonCount_+1; i++) {
+    CGFloat buttonAngle = prevAngle + divisionAngle;
+    CGFloat relativeButtonAngle = buttonAngle;
+    if(relativeButtonAngle >= 2*M_PI) {
+      relativeButtonAngle -= 2*M_PI;
+    }
+    //NSLog(@"%lu", [self r2d:buttonAngle]);
+    CGFloat qx = 1;
+    CGFloat qy = 1;
+    CGFloat x, y;
+    
+    // Determine quadrant
+    NSInteger quadrant;
+    if ((0 <= relativeButtonAngle && relativeButtonAngle <= M_PI_2)) {  // 0 to PI/2
+      quadrant = 1;
+      NSLog(@"Q1: %f", [self r2d:relativeButtonAngle]);
+    } else if (M_PI_2 < relativeButtonAngle && relativeButtonAngle <= M_PI) { // PI/2 to PI
+      quadrant = 2;
+      relativeButtonAngle = M_PI - relativeButtonAngle;
+      qx = -1;
+      NSLog(@"Q2: %f", [self r2d:relativeButtonAngle]);
+    } else if (M_PI < relativeButtonAngle && relativeButtonAngle < 3*M_PI_2) {  // PI to 3PI/2
+      quadrant = 3;
+      relativeButtonAngle = relativeButtonAngle - M_PI;
+      qx = -1;
+      qy = -1;
+      NSLog(@"Q3: %f", [self r2d:relativeButtonAngle]);
+    } else if (3*M_PI_2 <= relativeButtonAngle && relativeButtonAngle < 2*M_PI) {  // 3PI/2 to 2PI
+      quadrant = 4;
+      relativeButtonAngle = 2*M_PI - relativeButtonAngle;
+      qy = -1;
+      NSLog(@"Q4: %f", [self r2d:relativeButtonAngle]);
+    } else {
+      NSLog(@"Line: %f", [self r2d:relativeButtonAngle]);
+    }
+    
+    CGFloat a = triangleHypotenuse * cosf(relativeButtonAngle);
+    CGFloat b = triangleHypotenuse * sinf(relativeButtonAngle);
+    //NSLog(@"%f %f", cosf(buttonAngle), triangleHypotenuse);
+    
+    x = a * qx;
+    y = b * qy;
+    NSLog(@"a:%f b:%f x:%f y:%f", a, b, x, y);
+    
+
+    CGFloat x2 = center - buttonRadius + x;
+    CGFloat y2 = center - buttonRadius - y;
+    
+    [self _setButtonWithTag:i origin:CGPointMake(x2, y2)];
+    
+    prevAngle = buttonAngle;
+  }
+  /*
   //
   //  Triangle Values for Buttons' Position
   // 
@@ -348,7 +436,7 @@ static CGFloat defaultTriangleHypotenuse_,
   //     a
   //
   CGFloat centerBallMenuHalfSize = menuSize_         * .5f;
-  CGFloat buttonRadius           = centerButtonSize_ * .5f;
+  //CGFloat buttonRadius           = centerButtonSize_ * .5f;
   if (! triangleHypotenuse) triangleHypotenuse = defaultTriangleHypotenuse_; // Distance to Ball Center
   
   //
@@ -445,7 +533,7 @@ static CGFloat defaultTriangleHypotenuse_,
       
     default:
       break;
-  }
+  }*/
 }
 
 // Set Frame for button with special tag

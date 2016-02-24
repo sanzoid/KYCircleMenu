@@ -143,7 +143,9 @@
 				7F23CE8615B6B11800C99EA5 /* Frameworks */,
 				7F23CE8415B6B11800C99EA5 /* Products */,
 			);
+			indentWidth = 2;
 			sourceTree = "<group>";
+			tabWidth = 2;
 		};
 		7F23CE8415B6B11800C99EA5 /* Products */ = {
 			isa = PBXGroup;
